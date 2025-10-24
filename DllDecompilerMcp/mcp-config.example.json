@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "dll-decompiler": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "c:\\development\\mcpeek\\DllDecompilerMcp\\DllDecompilerMcp.csproj"
+      ],
+      "description": "DLL Decompiler MCP Server - Decompiles .NET assemblies and makes them searchable"
+    }
+  }
+}
