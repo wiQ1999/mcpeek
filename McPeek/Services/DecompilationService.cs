@@ -78,22 +78,85 @@ public class DecompilationService
     }
 
     /// <summary>
-    /// Gets all currently loaded assemblies
+    /// Gets all currently loaded assemblies (includes both in-memory and cached assemblies)
     /// </summary>
     public List<DecompiledAssembly> GetLoadedAssemblies()
     {
-        return _loadedAssemblies.Values.ToList();
+        // Start with in-memory loaded assemblies
+        var assemblies = new Dictionary<string, DecompiledAssembly>();
+        
+        foreach (var kvp in _loadedAssemblies)
+        {
+            assemblies[kvp.Value.Hash] = kvp.Value;
+        }
+        
+        // Add cached assemblies that aren't already in memory
+        var cachedAssemblies = _cacheManager.GetAllCachedAssemblies();
+        foreach (var cached in cachedAssemblies)
+        {
+            if (!assemblies.ContainsKey(cached.Hash))
+            {
+                assemblies[cached.Hash] = cached;
+            }
+        }
+        
+        return assemblies.Values.ToList();
     }
 
     /// <summary>
-    /// Searches for text across all decompiled files
+    /// Gets lightweight metadata for all assemblies (fast - doesn't load full content)
+    /// </summary>
+    public List<AssemblyMetadata> GetLoadedAssemblyMetadata()
+    {
+        var metadataDict = new Dictionary<string, AssemblyMetadata>();
+        
+        // Add in-memory assemblies
+        foreach (var kvp in _loadedAssemblies)
+        {
+            var assembly = kvp.Value;
+            metadataDict[assembly.Hash] = new AssemblyMetadata
+            {
+                AssemblyName = assembly.AssemblyName,
+                AssemblyPath = assembly.AssemblyPath,
+                Hash = assembly.Hash,
+                DecompiledAt = assembly.DecompiledAt,
+                CachedAt = assembly.DecompiledAt,
+                FileCount = assembly.Files.Count,
+                TypeCount = assembly.Files.Count,
+                Namespaces = assembly.Files
+                    .Select(f => f.Namespace)
+                    .Where(ns => !string.IsNullOrEmpty(ns))
+                    .Distinct()
+                    .OrderBy(ns => ns)
+                    .ToList()
+            };
+        }
+        
+        // Add cached metadata for assemblies not in memory
+        var cachedMetadata = _cacheManager.GetAllCachedAssemblyMetadata();
+        foreach (var metadata in cachedMetadata)
+        {
+            if (!metadataDict.ContainsKey(metadata.Hash))
+            {
+                metadataDict[metadata.Hash] = metadata;
+            }
+        }
+        
+        return metadataDict.Values.ToList();
+    }
+
+    /// <summary>
+    /// Searches for text across all decompiled files (includes both in-memory and cached assemblies)
     /// </summary>
     public List<SearchResult> Search(string query, bool caseSensitive = false)
     {
         var results = new List<SearchResult>();
         var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
-        foreach (var assembly in _loadedAssemblies.Values)
+        // Search across all loaded assemblies (includes cached ones)
+        var assemblies = GetLoadedAssemblies();
+        
+        foreach (var assembly in assemblies)
         {
             foreach (var file in assembly.Files)
             {

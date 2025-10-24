@@ -19,7 +19,9 @@ builder.Services.AddSingleton<DecompilationService>();
 // Configure MCP server with stdio transport
 builder.Services.AddMcpServer()
     .WithStdioServerTransport()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly();
 
 var app = builder.Build();
 

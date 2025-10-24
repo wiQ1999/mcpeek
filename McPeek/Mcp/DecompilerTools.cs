@@ -120,18 +120,21 @@ public class DecompilerTools
     [Description("Lists all assemblies that have been decompiled and are currently loaded")]
     public static LoadedAssembliesResponse ListLoadedAssemblies(DecompilationService decompilationService)
     {
-        var assemblies = decompilationService.GetLoadedAssemblies();
+        // Use fast metadata method instead of loading full content
+        var metadata = decompilationService.GetLoadedAssemblyMetadata();
         
         return new LoadedAssembliesResponse
         {
             Success = true,
-            TotalAssemblies = assemblies.Count,
-            Assemblies = assemblies.Select(a => new AssemblyInfo
+            TotalAssemblies = metadata.Count,
+            Assemblies = metadata.Select(m => new AssemblyInfo
             {
-                Name = a.AssemblyName,
-                Path = a.AssemblyPath,
-                FileCount = a.Files.Count,
-                DecompiledAt = a.DecompiledAt
+                Name = m.AssemblyName,
+                Path = m.AssemblyPath,
+                FileCount = m.FileCount,
+                DecompiledAt = m.DecompiledAt,
+                TypeCount = m.TypeCount,
+                Namespaces = m.Namespaces
             }).ToList()
         };
     }
@@ -222,6 +225,8 @@ public class AssemblyInfo
     public string Path { get; set; } = string.Empty;
     public int FileCount { get; set; }
     public DateTime DecompiledAt { get; set; }
+    public int TypeCount { get; set; }
+    public List<string> Namespaces { get; set; } = new();
 }
 
 public class CacheStatsResponse : BaseResponse

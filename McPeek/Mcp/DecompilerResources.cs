@@ -1,12 +1,14 @@
 using McPeek.Services;
 using Microsoft.Extensions.AI;
 using System.ComponentModel;
+using ModelContextProtocol.Server;
 
 namespace McPeek.Mcp;
 
 /// <summary>
 /// MCP Resources for accessing decompiled DLL content
 /// </summary>
+[McpServerResourceType]
 public class DecompilerResources
 {
     private readonly DecompilationService _decompilationService;
@@ -19,6 +21,7 @@ public class DecompilerResources
     /// <summary>
     /// Gets a list of all available decompiled files as resources
     /// </summary>
+    [McpServerResource]
     [Description("Lists all decompiled C# source files available as resources")]
     public List<ResourceInfo> ListResources()
     {
@@ -45,6 +48,7 @@ public class DecompilerResources
     /// <summary>
     /// Gets the content of a specific decompiled file
     /// </summary>
+    [McpServerResource]
     [Description("Retrieves the decompiled C# source code for a specific file")]
     public ResourceContent? GetResource(
         [Description("The URI of the resource (e.g., decompiled://AssemblyName/Namespace/TypeName.cs)")] string uri)
@@ -83,6 +87,7 @@ public class DecompilerResources
     /// <summary>
     /// Gets assembly overview information
     /// </summary>
+    [McpServerResource]
     [Description("Gets an overview of a decompiled assembly including all types and namespaces")]
     public AssemblyOverview? GetAssemblyOverview(
         [Description("The name of the assembly")] string assemblyName)

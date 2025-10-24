@@ -58,8 +58,16 @@ public class DecompilationCacheManager
             return null;
         }
 
-        var json = File.ReadAllText(cacheFilePath);
-        return JsonSerializer.Deserialize<DecompiledAssembly>(json);
+        try
+        {
+            var json = File.ReadAllText(cacheFilePath);
+            return JsonSerializer.Deserialize<DecompiledAssembly>(json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to deserialize cached assembly {hash}: {ex.Message}");
+            return null;
+        }
     }
 
     /// <summary>
@@ -75,12 +83,24 @@ public class DecompilationCacheManager
         
         File.WriteAllText(cacheFilePath, json);
 
+        // Extract namespaces from files
+        var namespaces = decompiledAssembly.Files
+            .Select(f => f.Namespace)
+            .Where(ns => !string.IsNullOrEmpty(ns))
+            .Distinct()
+            .OrderBy(ns => ns)
+            .ToList();
+
         _cacheIndex[hash] = new CacheEntry
         {
             Hash = hash,
             OriginalPath = originalPath,
             CachedAt = DateTime.UtcNow,
-            AssemblyName = decompiledAssembly.AssemblyName
+            AssemblyName = decompiledAssembly.AssemblyName,
+            DecompiledAt = decompiledAssembly.DecompiledAt,
+            FileCount = decompiledAssembly.Files.Count,
+            TypeCount = decompiledAssembly.Files.Count, // Each file typically represents one type
+            Namespaces = namespaces
         };
 
         SaveCacheIndex();
@@ -112,6 +132,51 @@ public class DecompilationCacheManager
             CacheDirectory = _cacheDirectory,
             TotalSizeBytes = GetCacheSize()
         };
+    }
+
+    /// <summary>
+    /// Gets all cached assemblies (without full decompiled content)
+    /// </summary>
+    public List<CacheEntry> GetAllCachedEntries()
+    {
+        return _cacheIndex.Values.ToList();
+    }
+
+    /// <summary>
+    /// Gets all cached assemblies (with full decompiled content)
+    /// </summary>
+    public List<DecompiledAssembly> GetAllCachedAssemblies()
+    {
+        var assemblies = new List<DecompiledAssembly>();
+        
+        foreach (var entry in _cacheIndex.Values)
+        {
+            var assembly = GetCached(entry.Hash);
+            if (assembly != null)
+            {
+                assemblies.Add(assembly);
+            }
+        }
+        
+        return assemblies;
+    }
+
+    /// <summary>
+    /// Gets lightweight assembly metadata without loading full decompiled content
+    /// </summary>
+    public List<AssemblyMetadata> GetAllCachedAssemblyMetadata()
+    {
+        return _cacheIndex.Values.Select(entry => new AssemblyMetadata
+        {
+            AssemblyName = entry.AssemblyName,
+            AssemblyPath = entry.OriginalPath,
+            Hash = entry.Hash,
+            DecompiledAt = entry.DecompiledAt,
+            CachedAt = entry.CachedAt,
+            FileCount = entry.FileCount,
+            TypeCount = entry.TypeCount,
+            Namespaces = entry.Namespaces
+        }).ToList();
     }
 
     private string GetCacheFilePath(string hash)
@@ -163,6 +228,10 @@ public class CacheEntry
     public string OriginalPath { get; set; } = string.Empty;
     public DateTime CachedAt { get; set; }
     public string AssemblyName { get; set; } = string.Empty;
+    public DateTime DecompiledAt { get; set; }
+    public int FileCount { get; set; }
+    public int TypeCount { get; set; }
+    public List<string> Namespaces { get; set; } = new();
 }
 
 public class CacheStatistics
@@ -170,4 +239,16 @@ public class CacheStatistics
     public int TotalCachedAssemblies { get; set; }
     public string CacheDirectory { get; set; } = string.Empty;
     public long TotalSizeBytes { get; set; }
+}
+
+public class AssemblyMetadata
+{
+    public string AssemblyName { get; set; } = string.Empty;
+    public string AssemblyPath { get; set; } = string.Empty;
+    public string Hash { get; set; } = string.Empty;
+    public DateTime DecompiledAt { get; set; }
+    public DateTime CachedAt { get; set; }
+    public int FileCount { get; set; }
+    public int TypeCount { get; set; }
+    public List<string> Namespaces { get; set; } = new();
 }
