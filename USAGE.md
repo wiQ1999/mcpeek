@@ -5,7 +5,7 @@
 ### 1. Start the Server
 
 ```bash
-cd c:\development\mcpeek\DllDecompilerMcp
+cd c:\development\mcpeek\McPeek
 dotnet run
 ```
 
@@ -18,7 +18,7 @@ Add to your MCP settings file (usually in VS Code settings or Cline configuratio
 ```json
 {
   "mcpServers": {
-    "dll-decompiler": {
+    "mcpeek": {
       "command": "dotnet",
       "args": [
         "run",
@@ -221,7 +221,7 @@ Then selectively decompile only what you need.
 - **First decompilation**: Can take a few seconds per DLL depending on size
 - **Cached decompilation**: Instant (< 100ms)
 - **Search**: Very fast across all loaded assemblies
-- **Cache location**: `%TEMP%\DllDecompilerMcp\cache`
+- **Cache location**: `%TEMP%\McPeek\cache`
 
 ## Security Considerations
 

@@ -240,7 +240,7 @@ To use this MCP server with VS Code or Cline, add it to your MCP settings:
 ```json
 {
   "mcpServers": {
-    "dll-decompiler": {
+    "mcpeek": {
       "command": "dotnet",
       "args": [
         "run",
