@@ -1,4 +1,4 @@
-﻿using DllDecompilerMcp.Services;
+﻿using McPeek.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

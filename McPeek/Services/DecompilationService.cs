@@ -5,7 +5,7 @@ using ICSharpCode.Decompiler.TypeSystem;
 using System.Reflection.Metadata;
 using System.Text;
 
-namespace DllDecompilerMcp.Services;
+namespace McPeek.Services;
 
 /// <summary>
 /// Service for decompiling .NET assemblies using ICSharpCode.Decompiler

@@ -1,8 +1,8 @@
-using DllDecompilerMcp.Services;
+using McPeek.Services;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 
-namespace DllDecompilerMcp.Mcp;
+namespace McPeek.Mcp;
 
 /// <summary>
 /// MCP Tools for DLL decompilation operations

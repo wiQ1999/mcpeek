@@ -1,8 +1,8 @@
-using DllDecompilerMcp.Services;
+using McPeek.Services;
 using Microsoft.Extensions.AI;
 using System.ComponentModel;
 
-namespace DllDecompilerMcp.Mcp;
+namespace McPeek.Mcp;
 
 /// <summary>
 /// MCP Resources for accessing decompiled DLL content

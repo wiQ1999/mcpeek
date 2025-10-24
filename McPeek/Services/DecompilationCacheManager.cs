@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace DllDecompilerMcp.Services;
+namespace McPeek.Services;
 
 /// <summary>
 /// Manages persistent file-based caching of decompiled DLL content using SHA256 hashes
@@ -14,7 +14,7 @@ public class DecompilationCacheManager
 
     public DecompilationCacheManager()
     {
-        _cacheDirectory = Path.Combine(Path.GetTempPath(), "DllDecompilerMcp", "cache");
+        _cacheDirectory = Path.Combine(Path.GetTempPath(), "McPeek", "cache");
         _indexFile = Path.Combine(_cacheDirectory, "cache-index.json");
         
         Directory.CreateDirectory(_cacheDirectory);
