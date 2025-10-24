@@ -114,6 +114,71 @@ public class DecompilerTools
     }
 
     /// <summary>
+    /// Gets the decompiled source code for a specific class
+    /// </summary>
+    [McpServerTool]
+    [Description("Retrieves the full decompiled C# source code for a specific class by name")]
+    public static GetClassResponse GetClass(
+        DecompilationService decompilationService,
+        [Description("The full or partial class name to search for (e.g., 'JsonSerializer' or 'System.Text.Json.JsonSerializer')")] string className,
+        [Description("Whether the search should be case-sensitive (default: false)")] bool caseSensitive = false)
+    {
+        try
+        {
+            var assemblies = decompilationService.GetLoadedAssemblies();
+            var comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            // Search for the class in all assemblies
+            foreach (var assembly in assemblies)
+            {
+                foreach (var file in assembly.Files)
+                {
+                    // Match by full type name or just class name
+                    if (file.TypeName.Equals(className, comparison) ||
+                        file.TypeName.EndsWith("." + className, comparison) ||
+                        file.TypeName.EndsWith("+" + className, comparison)) // nested class
+                    {
+                        // Extract just the class name (after last . or +)
+                        var simpleClassName = file.TypeName;
+                        var lastDot = simpleClassName.LastIndexOf('.');
+                        var lastPlus = simpleClassName.LastIndexOf('+');
+                        var lastSeparator = Math.Max(lastDot, lastPlus);
+                        if (lastSeparator >= 0)
+                        {
+                            simpleClassName = simpleClassName.Substring(lastSeparator + 1);
+                        }
+
+                        return new GetClassResponse
+                        {
+                            Success = true,
+                            ClassName = simpleClassName,
+                            Namespace = file.Namespace,
+                            AssemblyName = assembly.AssemblyName,
+                            FilePath = file.Path,
+                            SourceCode = file.Content,
+                            IsPublic = file.IsPublic
+                        };
+                    }
+                }
+            }
+
+            return new GetClassResponse
+            {
+                Success = false,
+                Message = $"Class '{className}' not found in any loaded assembly. Try using SearchCode to find it first."
+            };
+        }
+        catch (Exception ex)
+        {
+            return new GetClassResponse
+            {
+                Success = false,
+                Message = $"Failed to get class: {ex.Message}"
+            };
+        }
+    }
+
+    /// <summary>
     /// Lists all currently loaded assemblies
     /// </summary>
     [McpServerTool]
@@ -234,4 +299,14 @@ public class CacheStatsResponse : BaseResponse
     public int TotalCachedAssemblies { get; set; }
     public string CacheDirectory { get; set; } = string.Empty;
     public double CacheSizeMB { get; set; }
+}
+
+public class GetClassResponse : BaseResponse
+{
+    public string ClassName { get; set; } = string.Empty;
+    public string Namespace { get; set; } = string.Empty;
+    public string AssemblyName { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
+    public string SourceCode { get; set; } = string.Empty;
+    public bool IsPublic { get; set; }
 }

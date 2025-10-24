@@ -161,7 +161,33 @@ Searches for text patterns across all decompiled C# code.
 }
 ```
 
-#### 4. ListLoadedAssemblies
+#### 4. GetClass
+
+Retrieves the complete source code for a specific class from loaded assemblies.
+
+**Parameters:**
+- `className` (string): The name of the class to retrieve (supports partial names)
+- `caseSensitive` (bool, optional): Whether to match case-sensitively (default: false)
+
+**Returns:**
+```json
+{
+  "Success": true,
+  "ClassName": "MyClass",
+  "Namespace": "MyNamespace",
+  "AssemblyName": "MyAssembly",
+  "FilePath": "MyNamespace/MyClass.cs",
+  "IsPublic": true,
+  "SourceCode": "namespace MyNamespace\n{\n    public class MyClass\n    {\n        ...\n    }\n}"
+}
+```
+
+**Example Usage:**
+- `className: "JsonSerializer"` - Finds System.Text.Json.JsonSerializer
+- `className: "System.Text.Json.JsonSerializer"` - Direct match
+- `className: "MyClass+NestedClass"` - Retrieves nested classes
+
+#### 5. ListLoadedAssemblies
 
 Lists all assemblies that have been decompiled and are currently loaded.
 
@@ -181,7 +207,7 @@ Lists all assemblies that have been decompiled and are currently loaded.
 }
 ```
 
-#### 5. GetCacheStatistics
+#### 6. GetCacheStatistics
 
 Gets statistics about the decompilation cache.
 
@@ -195,7 +221,7 @@ Gets statistics about the decompilation cache.
 }
 ```
 
-#### 6. ClearCache
+#### 7. ClearCache
 
 Clears all cached decompilation results.
 
