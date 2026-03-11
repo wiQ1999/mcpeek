@@ -17,11 +17,12 @@ public class DecompilerTools
     [Description("Decompiles all .NET DLL files in the specified folder and caches the results")]
     public static async Task<DecompileResult> DecompileFolder(
         DecompilationService decompilationService,
-        [Description("The absolute path to the folder containing DLL files")] string folderPath)
+        [Description("The absolute path to the folder containing DLL files")] string folderPath,
+        [Description("Optional glob pattern to filter DLL files by name. The .dll extension is added automatically.")] string? filePattern = null)
     {
         try
         {
-            var assemblies = await decompilationService.DecompileFolderAsync(folderPath);
+            var assemblies = await decompilationService.DecompileFolderAsync(folderPath, filePattern);
             
             return new DecompileResult
             {

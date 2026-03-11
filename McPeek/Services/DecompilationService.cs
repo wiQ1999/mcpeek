@@ -2,6 +2,8 @@ using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.CSharp;
 using ICSharpCode.Decompiler.Metadata;
 using ICSharpCode.Decompiler.TypeSystem;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using System.Reflection.Metadata;
 using System.Text;
 
@@ -24,12 +26,33 @@ public class DecompilationService
     /// <summary>
     /// Decompiles all DLLs in the specified folder
     /// </summary>
-    public async Task<List<DecompiledAssembly>> DecompileFolderAsync(string folderPath)
+    public async Task<List<DecompiledAssembly>> DecompileFolderAsync(string folderPath, string? filePattern = null)
     {
         if (!Directory.Exists(folderPath))
             throw new DirectoryNotFoundException($"Folder not found: {folderPath}");
 
         var dllFiles = Directory.GetFiles(folderPath, "*.dll", SearchOption.AllDirectories);
+
+        if (!string.IsNullOrWhiteSpace(filePattern))
+        {
+            var pattern = filePattern.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                ? filePattern
+                : filePattern + ".dll";
+
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddInclude("**/" + pattern);
+
+            var directoryInfo = new DirectoryInfoWrapper(new DirectoryInfo(folderPath));
+            var matchResult = matcher.Execute(directoryInfo);
+            var matchedRelativePaths = new HashSet<string>(
+                matchResult.Files.Select(f => f.Path.Replace('/', Path.DirectorySeparatorChar)),
+                StringComparer.OrdinalIgnoreCase);
+
+            dllFiles = [.. dllFiles
+                .Where(f => matchedRelativePaths.Contains(
+                    Path.GetRelativePath(folderPath, f)))];
+        }
+
         var results = new List<DecompiledAssembly>();
 
         foreach (var dllPath in dllFiles)
