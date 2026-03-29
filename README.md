@@ -20,7 +20,7 @@ A Model Context Protocol (MCP) server that decompiles .NET DLL assemblies using 
 ### Build
 
 ```bash
-cd c:\development\mcpeek\DllDecompilerMcp
+cd c:\development\mcpeek\McPeek
 dotnet build
 ```
 
@@ -128,7 +128,7 @@ Gets statistics about the decompilation cache.
 {
   "Success": true,
   "TotalCachedAssemblies": 10,
-  "CacheDirectory": "C:\\Users\\...\\Temp\\DllDecompilerMcp\\cache",
+  "CacheDirectory": "C:\\Users\\...\\Temp\\McPeek\\cache",
   "CacheSizeMB": 15.5
 }
 ```
@@ -226,7 +226,7 @@ Gets an overview of a decompiled assembly.
 The server uses a persistent file-based cache stored in the system's temp directory:
 
 ```
-%TEMP%\DllDecompilerMcp\cache\
+%TEMP%\McPeek\cache\
 ```
 
 The cache uses SHA256 hashes to detect when DLLs have changed. If a DLL hasn't changed, the cached decompilation is returned instantly.
@@ -245,7 +245,7 @@ To use this MCP server with VS Code or Cline, add it to your MCP settings:
       "args": [
         "run",
         "--project",
-        "c:\\development\\mcpeek\\DllDecompilerMcp\\DllDecompilerMcp.csproj"
+        "c:\\development\\mcpeek\\McPeek\\McPeek.csproj"
       ]
     }
   }
